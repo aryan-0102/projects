@@ -21,4 +21,4 @@ If you have any feedback, suggestions, or bug reports for any of these projects,
 License
 This repository is licensed under the MIT License. See the LICENSE file for more information.
 
-Note that this is just an example and you should customize the content of your README file based on your own projects and preferences.
+
