@@ -2,6 +2,11 @@
 import mysql.connector
 import time
 import pyfiglet
+
+from google.cloud import storage 
+from datetime import datetime
+import sys
+ 
 T = "Hostel Management System 1.0 "
 ASCII_art_1 = pyfiglet.figlet_format(T)
 print(ASCII_art_1)
@@ -19,7 +24,7 @@ Aseem Kamboj, Atharv Pratap Singh Chundawat
 Powered by PyFiglet, MySQL 8.0.3, and Python 3.10.12.
 """)
 
-mycon = mysql.connector.connect(host='localhost', user='root', passwd='password', database='hms')
+mycon = mysql.connector.connect(user='me', password='aryan', host='34.170.231.29', database='db')
 cursor = mycon.cursor()
 if mycon.is_connected() == False:
     print('con fail')
