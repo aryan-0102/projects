@@ -2,11 +2,21 @@
 import mysql.connector
 import time
 import pyfiglet
+import typer
+from rich.progress import Progress, SpinnerColumn, TextColumn, track
+from rich.console import Console
+from rich import print
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
+from InquirerPy.separator import Separator
+import time
+from prettytable import PrettyTable
 
-from google.cloud import storage 
-from datetime import datetime
-import sys
- 
+
+from rich.live import Live
+from rich.table import Table
+
+
 T = "Hostel Management System 1.0 "
 ASCII_art_1 = pyfiglet.figlet_format(T)
 print(ASCII_art_1)
@@ -24,7 +34,7 @@ Aseem Kamboj, Atharv Pratap Singh Chundawat
 Powered by PyFiglet, MySQL 8.0.3, and Python 3.10.12.
 """)
 
-mycon = mysql.connector.connect(user='me', password='aryan', host='34.170.231.29', database='db')
+mycon = mysql.connector.connect(host='localhost', user='root', passwd='password', database='hms')
 cursor = mycon.cursor()
 if mycon.is_connected() == False:
     print('con fail')
@@ -122,12 +132,12 @@ def calcfee():
         return None
 
 # ------------------------- - Fee payment --------------------------
-''' def payfee(adm):
+def payfee(adm):
     st = 'UPDATE student SET fee = 0, fine = 0 WHERE adm = %s'
     cursor.execute(st, (adm,))
     sleep()
     print('All dues cleared Successfully.....')
-    mycon.commit()  '''
+    mycon.commit()  
 # --------------------------------------------guest entry--------------------------------------------
 
 def guest():
@@ -139,35 +149,38 @@ def guest():
     cursor.execute(f'INSERT INTO guest(name,contact,student,room_no,relation) Values(\"{nam}\",{con},\"{stu}\",{roomno},\"{rel}\")')
     mycon.commit()
     sleep()
+
     print('Updated Successfully ..... \n\n')
 
 
 # --------------------------------------------login--------------------------------------------
+
 def log():
     attempts = 0  # Counter for login attempts
     
     while attempts < 3:
         empid = input('Enter Employee ID : ')
         passwd = input('Enter Password : ')
+        progress('Validitating ....')
 
         st = "SELECT passwd FROM warden WHERE empid = %s"
         cursor.execute(st, (empid,))
         data = cursor.fetchone()
 
         if data:  # Check if data is not empty
-            stored_passwd = data[0]  # Assuming the password is stored in the first column
+            stored_passwd = data[0]  
             if passwd == stored_passwd:
-                print('Login successful!..........\n')
+                print('[bold blue]Login successful!..........[/bold blue]\n')
                 break  # Exit the loop if login is successful
             else:
-                print('Login failed. Incorrect password.')
+                print("[bold red]Alert![/bold red] Login failed. Incorrect password.")
         else:
-            print('ERROR.....Employee ID not found.....')
-            print('Contact Administration for assistance.\n')
+            print('[bold red]ERROR[/bold red].....Employee ID not found.....')
+            print('[bold green]Contact Administration for assistance.[/bold green]\n')
         attempts += 1  # Increment attempts counter
 
     if attempts == 3:
-        print('\n\n....Maximum login attempts reached. Contact Admin to reset password.\n Exiting...\n\n')
+        print('\n\n[bold red]....Maximum login attempts reached.[/bold red] Contact Admin to reset password.\n Exiting...\n\n')
         exit()  # Exit the program after maximum attempts reached
 
  # -------------------------------------------Retrieving hostel data -------------------------------------------
@@ -200,59 +213,107 @@ def data():
     adm = input('Enter Student Adm No. :')
     st = f'select * from student where adm={adm}'
     cursor.execute(st)
-    dat = cursor.fetchall()
-    sleep()
-    print(dat)
+    
+    rows = cursor.fetchall()
+
+# Get column names
+    columns = [i[0] for i in cursor.description]
+
+# Create a PrettyTable object
+    table = PrettyTable(columns)
+
+# Add rows to the table
+    for row in rows:
+        table.add_row(row)
+
+# Print the table
+    print(table)
+    '''
+    dat = cursor.fetchone()
+    print('\n')
+    progress("Fetching data ....")
+
+    print(dat)'''
 
 
 
 # ---------------------------------------------------END FUNCTIONS---------------------------------------------------
 # --------------------------------------------------------------------------------------------------------------
+def progress(str):
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        progress.add_task(description=str, total=None)
+        time.sleep(5)
+    print("Done!")
 
-# ---------------------LogIN-------------------
+def bar():
+    total = 0
+    for value in track(range(100), description="Processing..."):
+        # Fake processing time
+        time.sleep(0.02)
+        total += 1
+    print(f"Processed {total} things.")
 
-print('**  LOGIN  **')
 
-log()
+# ===========================================================================================================================
+# ===========================================================================================================================
 
-# main program
-while True:
-    print('')
-    print('\n\n\"HOSTEL MANAGEMENT SYSTEM\"\n')
 
-    print('')
-    print('1. Guest Entry')
-    print('2. General Operations')
-    print('3. Exit\n')
-    choice = int(input('Preferred operation : '))
-    if choice == 1:
+def main():
+    log()
+    print('\n')
+    action = inquirer.select(
+        message="Select an action:",
+        choices=[
+            "Guest Entry",
+            "General Operations",
+            Choice(value=None, name="Exit"),
+        ],
+        default=None,
+    ).execute()
+    if action == 'Guest Entry':
         guest()
-    elif choice == 2:
-        print('\n\nAvailable Operations : ')
-        print('')
-        print('1. View Student Details')
-        print('2. Fee payment')
-        print('3. Add New Student')
-        print('4. Add New Warden ')
-        print('5. Get Hostel Detail')
-        print('6. Delete student ')
-        op = int(input('\nPreferred operation : '))
-        if op == 1:
-            data()
-        elif op == 2:
-            calcfee()
-        elif op == 3:
-            addstu()
-        elif op == 4:
+    elif action == 'General Operations' :
+        action = inquirer.select(
+            message = "Select An Operation : ",
+            choices =[ 
+                "1. Add Warden ",
+                "2. View Student Details",
+                "3. Fee Payment",
+                "4. Add New Student",
+                "5. Get Hostel Detail",
+                "6. Delete Student",
+                Choice(value=None , name="Exit"),
+            ],
+            default =None,
+        ).execute()
+        if action =="1. Add Warden " :
             wardadd()
-        elif op == 5:
+        elif action =="2. View Student Details":
+            data()
+        elif action =="3. Fee Payment":
+            calcfee()
+        elif action =="4. Add New Student":
+            addstu()
+        elif action =="5. Get Hostel Detail":
             hostel_data()
-        elif op == 6:
+        elif action =="6. Delete Student":
             delete()
-    elif choice == 3:
-        print('Exiting program.......')
-        time.sleep(2)
-        mycon.commit()
+
+    elif action == "Exit" :
+        total = 0
+        for value in track(range(100), description="Exiting..."):
+        # Fake processing time
+            time.sleep(0.02)
+            total += 1
         exit()
-        print('Invalid Choice ')
-        break
+
+       
+if __name__ == "__main__":
+    typer.run(main)
+    while():
+        main()
+    
