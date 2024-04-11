@@ -28,7 +28,7 @@ MIT License:
 This software is licensed under the MIT License.
 
 Developed by:
-Aryan Dhasmana, Nikhil Gusain, Simranjeet Kaur,
+Aryan Dhasmana, Nikhil Gusain, Simranjit Kaur,
 Aseem Kamboj, Atharv Pratap Singh Chundawat
 
 Powered by PyFiglet, MySQL 8.0.3, and Python 3.10.12.
