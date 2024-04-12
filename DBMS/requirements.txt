@@ -1,0 +1,6 @@
+mysql-connector-python
+pyfiglet
+typer
+rich
+inquirerpy
+prettytable
