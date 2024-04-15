@@ -90,7 +90,7 @@ def wardadd():
 
 
 # --------------------------------------------add student--------------------------------------------
-
+'''
 def addstu():
     name = input('Enter Name: ')
     contact = input('Enter Contact: ')
@@ -123,7 +123,39 @@ def addstu():
     print("\n[bold green]Student details added successfully......[/bold green]")
 
     return
+'''
+def addstu():
+    name = input('Enter Name: ')
+    contact = input('Enter Contact: ')
+    address = input('Enter Address: ')
+    adm = input('Enter Admission No.: ')
+    action = inquirer.select(
+            message="Select Hostel:",
+            choices=[
+                "Aravali",
+                "Himalaya",
+                "Shivalik",
+                "Nilgiri",
+                Choice(value='Exit', name="Exit"),
+            ],
+            default=None,
+        ).execute()
+    
 
+    if action != "Exit":
+        h_name = action ;
+    rm_no = random.randint(100,700)
+
+    # Insert student details into the database
+    st = f"INSERT INTO student (name, contact, Address, adm, h_name, Rm_no) VALUES (%s,%s,%s,%s,%s,%s)"
+    values = (name,contact,address,adm,h_name,rm_no)
+    cursor.execute(st, values)
+    # Commit the transaction
+    mycon.commit()
+    progress("Processing Data")
+    print("\n[bold green]Student details added successfully......[/bold green]")
+    print(f'Room no . {rm_no} assigned .')
+    return
 # --------------------------------------------fee calculator--------------------------------------------
 
 def calcfee():
