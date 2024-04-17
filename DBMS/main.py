@@ -12,6 +12,7 @@ from InquirerPy.separator import Separator
 import time
 from prettytable import PrettyTable
 import sys
+import random
 
 
 from rich.live import Live
@@ -57,16 +58,25 @@ def sleep():
 def delete():
     adm = input('Enter admission number : ')
     st =(f'select * from student where adm = {adm}')
-    result = cursor.execute(st)
-    st = (f'delete from student where adm = {adm}')
     cursor.execute(st)
+    result = cursor.fetchone()
+    
     if result :
         progress('Processing')
-        mycon.commit()
+        
         print(f'\n[bold green]Successfully Deleted Record for Admission number {adm}[/bold green]')
+        table = PrettyTable()
+        table.field_names = [i[0] for i in cursor.description]  # Get column names
+        table.add_row(result)  # Add the fetched row to the table
+        print("Student Record:")
+        print(table)
+        str = (f'delete from student where adm = {adm}')
+        cursor.execute(str)
+        mycon.commit()
     
     else:
         print('[bold red]Student not found.[/bold red]')
+
 # --------------------new warden -------------------
 def wardadd():
     name = input('Enter Name: ')
@@ -194,6 +204,31 @@ def payfee(adm):
     sleep()
     print('[bold green]All dues cleared Successfully.....[/bold green]')
     mycon.commit()  
+
+
+# ---------------------------------------------Set fee-----------------------------------
+def set_fee():
+    adm = input('Enter admission number: ')
+    
+    select_query = 'SELECT fee, fine FROM student WHERE adm = %s'
+    cursor.execute(select_query, (adm,))
+    result = cursor.fetchone()
+    
+    if result:
+        fee, fine = result
+        print(f'Current Fee: {fee}')
+        print(f'Current Fine: {fine}')
+        
+        new_fee = input('Enter new fee: ')
+        
+        update_query = 'UPDATE student SET fee = %s WHERE adm = %s'
+        cursor.execute(update_query, (new_fee, adm))
+        mycon.commit()
+        
+        print('[bold green]Fee updated successfully![/bold green]')
+    else:
+        print('[bold red]Student not found.[/bold red]')
+
 # --------------------------------------------guest entry--------------------------------------------
 
 def guest():
@@ -202,11 +237,32 @@ def guest():
     stu = input('Enter Student Name : ')
     roomno = input('Enter Room No : ')
     rel = input('Enter Relation : ')
-    cursor.execute(f'INSERT INTO guest(name,contact,student,room_no,relation) Values(\"{nam}\",{con},\"{stu}\",{roomno},\"{rel}\")')
+    time = input('Enter entry time : ')
+    cursor.execute(f'INSERT INTO guest(name,contact,student,room_no,relation,time) Values(\"{nam}\",{con},\"{stu}\",{roomno},\"{rel}\",{time})')
     mycon.commit()
     sleep()
 
     print('[bold green]Updated Successfully ..... \n\n[/bold green]')
+
+
+def print_recent_guests():
+    try:
+        # Execute SQL query to retrieve 5 most recent guest records
+        query = "SELECT * FROM guest ORDER BY time DESC LIMIT 5"
+        cursor.execute(query)
+        guests = cursor.fetchall()
+
+        if guests:
+            # Print header
+            print("[bold underline]Recent Guest Records:[/bold underline]")
+            
+            # Print guest records
+            for guest in guests:
+                print(f"Name: {guest[0]}, Contact: {guest[1]}, Student: {guest[2]}, Room No: {guest[3]}, Relation: {guest[4]}, Entry Time: {guest[5]}, Time In: {guest[6]}, Time Out: {guest[7]}")
+        else:
+            print("[bold red]No guest records found.[/bold red]")
+    except mysql.connector.Error as err:
+        print(f"[bold red]Error while retrieving guest records: {err}[/bold red]")
 
 
 # --------------------------------------------login--------------------------------------------
@@ -342,7 +398,7 @@ def progress(str):
         transient=True,
     ) as progress:
         progress.add_task(description=str, total=None)
-        time.sleep(5)
+        time.sleep(3)
     print("Done!")
 
 def bar():
@@ -384,6 +440,7 @@ def train():
                     "4. Add New Student",
                     "5. Get Hostel Detail",
                     "6. Delete Student",
+                    "7. Set Fee",
                     Choice(value=None , name="Exit"),
                 ],
                 default =None,
@@ -400,6 +457,8 @@ def train():
                 hostel_data()
             elif action =="6. Delete Student":
                 delete()
+            elif action =="7. Set Fee":
+                set_fee()
 
         elif action == "Exit" :
             total = 0
