@@ -51,9 +51,6 @@ This software is licensed under the MIT License.
 Developed by:
 
 - Aryan Dhasmana
-- Nikhil Gusain
-- Simranjeet Kaur
-- Aseem Kamboj
-- Atharv Pratap Singh Chundawat
+
 
 
